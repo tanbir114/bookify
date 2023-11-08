@@ -1,0 +1,22 @@
+npm install --save express-session
+npm i express-session-sequelize
+npm install cookie-parser
+npm install ejs express-ejs-layouts
+npm install --save bcryptjs
+npm install --save csurf
+npm install --save connect-flash
+
+usign SendGrid for sending mails (Email: tanbir@iut-dhaka.edu Pass: 112233445566778899)
+Twilio: TanbiR112233445566778899 
+
+npm install --save nodemailer
+npm install postmark --save
+npm install nodemailer-postmark-transport
+npm i --save express-validator
+
+npm init -y
+npm install express sequelize sqlite3 chart.js
+npm i hightcharts
+npm install axios cors
+
+ 

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+
+    #mycanvas{
+        display: block;
+        margin: 0;
+
+    }
+    #mycanvas2{
+        display:absolute;
+        top: 200px;
+    }
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Product Sales Doughnut Chart</h1>
+    <canvas id="mycanvas"></canvas>
+    <h1>Product Sales Bar Chart</h1>
+    <canvas id="mycanvas2"></canvas>
+    
+    <script>
+        var chrt = document.getElementById("mycanvas").getContext("2d");
+
+        var productTitle = JSON.parse('<%- productTitle %>');
+        var intArray = JSON.parse('<%- intArray %>');
+
+        const data = {
+            labels: productTitle,
+            datasets: [{
+                label: 'Product Sales',
+                data: intArray,
+                backgroundColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 205, 86)'
+                ],
+                hoverOffset: 4
+            }]
+        };
+
+        var myFirstChart = new Chart(chrt, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                aspectRatio: 4, // Change this value to adjust the size (e.g., 0.5 for smaller)
+                maintainAspectRatio: true
+            }
+        });
+
+        var bar_chrt = document.getElementById("mycanvas2").getContext("2d");
+        const bar_data = {
+        labels: productTitle,
+        datasets: [{
+                label: 'My second Dataset',
+                data: intArray,
+                backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(255, 159, 64, 0.2)',
+                'rgba(255, 205, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(201, 203, 207, 0.2)'
+                ],
+                borderColor: [
+                'rgb(255, 99, 132)',
+                'rgb(255, 159, 64)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(54, 162, 235)',
+                'rgb(153, 102, 255)',
+                'rgb(201, 203, 207)'
+                ],
+                borderWidth: 1
+            }]
+        };
+        var mySecondChart = new Chart(bar_chrt, {
+            type: 'bar',
+            data: bar_data,
+            options: 
+            {
+                aspectRatio: 3,
+                scales: 
+                {
+                    y: 
+                    {
+                        beginAtZero: true
+                    }
+                }
+            },
+        });
+    </script>
+</body>
+</html>
