@@ -4,12 +4,31 @@
 
     <body>
         <%- include('../includes/navigation.ejs') %>
-        <form action="/search" method="GET">
-            <label for="search">Search:</label>
+        <div class="filter">
+
+        <form action="/search" method="GET" class="search">
+           
             <input type="text" id="search" name="q" placeholder="Search products">
             <button type="submit">Search</button>
         </form>
         
+         
+        <form action="/products" method="GET" class="sort">
+            <label for="sort">Sort By:</label>
+            <select id="sort" name="sort" onchange="this.form.submit()">
+              <option value="default" <% if (sortOption === 'default') { %>selected<% } %>>A-Z</option>
+              <!-- <option value="az" <% if (sortOption === 'az') { %>selected<% } %>>A-Z</option> -->
+              <option value="za" <% if (sortOption === 'za') { %>selected<% } %>>Z-A</option>
+              <option value="price-asc" <% if (sortOption === 'price-asc') { %>selected<% } %>>Price Ascending</option>
+              <option value="price-desc" <% if (sortOption === 'price-desc') { %>selected<% } %>>Price Descending</option>
+            </select>
+
+            
+
+             <!-- Add a hidden input to store the current page -->
+            <input type="hidden" name="page" value="<%= currentPage %>">
+        </form>
+        </div>
             <main>
                 <% if (prods.length > 0) { %>
                     <div class="grid">

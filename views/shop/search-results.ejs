@@ -3,12 +3,40 @@
     </head>
 
     <body>
-        <%- include('../includes/navigation') %>
-        <form action="/search" method="GET">
-            <label for="search">Search:</label>
-            <input type="text" id="search" name="q" placeholder="Search products">
-            <button type="submit">Search</button>
-        </form>
+        <%- include('../includes/navigation.ejs') %>
+        <div class="filter">
+
+            <form action="/search" method="GET" class="search">
+               
+                <input type="text" id="search" name="q" placeholder="Search products">
+                <button type="submit">Search</button>
+            </form>
+            
+             
+            <form action="/search" method="GET" class="sort">
+                <label for="filterSort">Sort By:</label>
+                <select id="filterSort" name="filterSort" onchange="this.form.submit()">
+                  <!-- <option value="default" <% if (searchSort === 'default') { %>selected<% } %>>A-Z</option> -->
+                   <option value="az" <% if (searchSort === 'az') { %>selected<% } %>>A-Z</option> 
+                  <option value="za" <% if (searchSort === 'za') { %>selected<% } %>>Z-A</option>
+                  <option value="price-asc" <% if (searchSort === 'price-asc') { %>selected<% } %>>Price Ascending</option>
+                  <option value="price-desc" <% if (searchSort === 'price-desc') { %>selected<% } %>>Price Descending</option>
+                </select>
+    
+                
+    
+                 <!-- Add a hidden input to store the current page -->
+                <input type="hidden" name="q" value="<%= searchTerm %>">
+                <input type="hidden" name="page" value="<%= currentPage %>">
+                 
+
+                
+                
+            </form>
+            </div>
+
+         
+        
 
             <h1>Search Results</h1>
             <main>

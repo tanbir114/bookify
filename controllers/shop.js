@@ -13,15 +13,37 @@ function isIntegerString(value) {
   return /^\d+$/.test(value);
 }
 
+
 exports.getProducts = (req, res, next) => {
   const page = +req.query.page || 1;
   const offset = (page - 1) * ITEMS_PER_PAGE;
   let totalItems;
 
+  const sortOption = req.query.sort || 'default'; // Default sorting option
+
+  let sortingCriteria = [];
+  switch (sortOption) {
+    case 'az':
+      sortingCriteria = [['title', 'ASC']];
+      break;
+    case 'za':
+      sortingCriteria = [['title', 'DESC']];
+      break;
+    case 'price-asc':
+      sortingCriteria = [['price', 'ASC']];
+      break;
+    case 'price-desc':
+      sortingCriteria = [['price', 'DESC']];
+      break;
+    default:
+      // Default sorting, you can customize this as needed
+      sortingCriteria = [['title', 'ASC']];
+  }
+
   Product.count({
     where: {
       userEmail: {
-        [Sequelize.Op.ne]: req.user.email, // Exclude rows with the specific email
+        [Sequelize.Op.ne]: req.user.email,
       },
     },
   }) 
@@ -30,11 +52,12 @@ exports.getProducts = (req, res, next) => {
       return Product.findAll({
         where: {
           userEmail: {
-            [Sequelize.Op.ne]: req.user.email, // Exclude rows with the specific email
+            [Sequelize.Op.ne]: req.user.email,
           },
         },
         limit: ITEMS_PER_PAGE,
         offset: offset,
+        order: sortingCriteria, // Apply sorting criteria
       });
     })
     .then((products) => {
@@ -48,12 +71,16 @@ exports.getProducts = (req, res, next) => {
         nextPage: page + 1,
         previousPage: page - 1,
         lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+        sortOption: sortOption,
       });
     })
     .catch((err) => {
       console.log(err);
     });
 };
+
+
+
 
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
@@ -291,11 +318,76 @@ exports.getOrders = (req, res, next) => {
 };
 
 
-exports.getSearch = async (req, res, next)  => {
+// exports.getSearch = async (req, res, next)  => {
+//   const searchTerm = req.query.q;
+//   const itemsPerPage = 1;
+//   console.log("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
+//   console.log(searchTerm);
+
+//   try {
+//     const totalCount = await Product.count({
+//       where: {
+//         [Op.or]: [
+//           { title: { [Op.substring]: searchTerm } },
+//           { description: { [Op.substring]: searchTerm } },
+//         ],
+//         userEmail: {
+//           [Sequelize.Op.ne]: req.user.email,
+//         },
+//       },
+//     });
+    
+
+//     const currentPage = parseInt(req.query.page) || 1;
+//     console.log(req.query.page);
+//     const offset = (currentPage - 1) * itemsPerPage;
+
+//     const products = await Product.findAll({
+//       where: {
+//         [Op.or]: [
+//           { title: { [Op.substring]: searchTerm } },
+//           { description: { [Op.substring]: searchTerm } },
+//         ],
+//         userEmail: {
+//           [Sequelize.Op.ne]: req.user.email,
+//         },
+//       },
+//       limit: itemsPerPage,
+//       offset: offset,
+//     });
+//     const totalPages = Math.ceil(totalCount / itemsPerPage);
+//     const hasPrevPage = currentPage > 1;
+//     const hasNextPage = itemsPerPage*currentPage < totalPages;
+//     const previousPage = currentPage - 1;
+//     const nextPage = currentPage + 1;
+//     const lastPage = totalPages;
+
+//     res.render('shop/search-results', {
+//       prods: products,
+//       pageTitle: 'Search Results',
+//       path: '/search',
+//       path:'/products',
+//       totalPages: totalPages,
+//       currentPage: currentPage,
+//       hasPrevPage: hasPrevPage,
+//       previousPage: previousPage,
+//       hasNextPage: hasNextPage,
+//       nextPage: nextPage,
+//       lastPage: lastPage,
+//       isAuthenticated: req.session.isLoggedIn,
+//       req: req,
+//       searchTerm: searchTerm,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// };
+
+
+exports.getSearch = async (req, res, next) => {
   const searchTerm = req.query.q;
   const itemsPerPage = 1;
-  console.log("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
-  console.log(searchTerm);
 
   try {
     const totalCount = await Product.count({
@@ -309,11 +401,27 @@ exports.getSearch = async (req, res, next)  => {
         },
       },
     });
-    
 
     const currentPage = parseInt(req.query.page) || 1;
-    console.log(req.query.page);
     const offset = (currentPage - 1) * itemsPerPage;
+
+    let sortOrder;
+    const searchSort=req.query.filterSort || 'default';
+
+
+      switch (searchSort) {
+      case 'za':
+        sortOrder = [['title', 'DESC']];
+        break;
+      case 'price-asc':
+        sortOrder = [['price', 'ASC']];
+        break;
+      case 'price-desc':
+        sortOrder = [['price', 'DESC']];
+        break;
+      default:
+        sortOrder = [['title', 'ASC']];
+    }
 
     const products = await Product.findAll({
       where: {
@@ -325,12 +433,14 @@ exports.getSearch = async (req, res, next)  => {
           [Sequelize.Op.ne]: req.user.email,
         },
       },
+      order: sortOrder,
       limit: itemsPerPage,
       offset: offset,
     });
+
     const totalPages = Math.ceil(totalCount / itemsPerPage);
     const hasPrevPage = currentPage > 1;
-    const hasNextPage = itemsPerPage*currentPage < totalPages;
+    const hasNextPage = itemsPerPage * currentPage < totalPages;
     const previousPage = currentPage - 1;
     const nextPage = currentPage + 1;
     const lastPage = totalPages;
@@ -339,7 +449,7 @@ exports.getSearch = async (req, res, next)  => {
       prods: products,
       pageTitle: 'Search Results',
       path: '/search',
-      path:'/products',
+      path: '/products',
       totalPages: totalPages,
       currentPage: currentPage,
       hasPrevPage: hasPrevPage,
@@ -350,10 +460,13 @@ exports.getSearch = async (req, res, next)  => {
       isAuthenticated: req.session.isLoggedIn,
       req: req,
       searchTerm: searchTerm,
+      searchSort: searchSort, // Add the sortOption here
     });
   } catch (error) {
     console.error(error);
     next(error);
   }
 };
+
+
 
