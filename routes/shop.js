@@ -1,5 +1,6 @@
 const express = require('express');
 const shopController = require('../controllers/shop');
+const productService = require('../models/productService');
 const router = express.Router();
 const isAuth = require('../middleware/is-auth');
 
@@ -14,5 +15,8 @@ router.post('/cart-delete-item', isAuth, shopController.postCartDeleteProduct);
 router.get('/orders', isAuth, shopController.getOrders);
 // router.get('/checkout', shopController.getCheckout);
 router.post('/create-order', isAuth, shopController.postOrder);
+router.get('/search',isAuth,shopController.getSearch);
+
+
 
 module.exports = router;
