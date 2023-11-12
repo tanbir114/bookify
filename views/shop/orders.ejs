@@ -4,10 +4,10 @@
             margin: 0;
             padding: 20px;
             position: absolute;
-            top: 15%;
-            left: 25%;
+            top: 180px;
+            left: 150px;
             transform: translate(-2%, -5%);
-            width: 800px;
+            width: 1200px;
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 15px 50px rgba(0,0,0,.2);
@@ -84,7 +84,7 @@
                     <% orders.forEach(order => { %>
                         <li class="li-list">
                             <div class="date">
-                                <h3 class="h3-list">Mar<br><span>06</span></h3>
+                                <h3 class="h3-list"><%= formatMonth(order.createdAt)%><br><span><%= formatDate(order.createdAt)%></span></h3>
                             </div>
                             <a href="#" class="a-list">
                                 <h5 class="h5-list">Order No: <%= order.id %></h5>

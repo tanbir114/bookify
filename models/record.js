@@ -10,6 +10,10 @@ const OrderDetail = sequelize.define("orderDetail", {
     type: Sequelize.INTEGER,
     allowNull: false,
   },
+  shopEmail:{
+    type: Sequelize.STRING,
+    allowNull: false,
+  }
 });
 
 module.exports = OrderDetail;
