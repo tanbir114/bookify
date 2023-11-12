@@ -11,8 +11,6 @@
 
                 <% if (prods.length> 0) { %>
                     <% for (let product of prods) { %>
-                        <!-- Display each product -->
-                        <!-- Display each product -->
                         <div class="grid">
                             <article class="card product-item">
                                 <header class="card__header">
@@ -41,11 +39,19 @@
                         <% } %>
 
                             <section class="pagination">
-                                <% for (let page=1; page <=totalPages; page++) { %>
-                                    <a href="?page=<%= page %>" class="<%= currentPage === page ? 'active' : '' %>">
-                                        <%= page %>
-                                    </a>
-                                    <% } %>
+                                <% if (currentPage != 1 && previousPage != 1) { %>
+                                    <a href="?q=<%= searchTerm%>&page=1">1</a>
+                                <% }%>
+                                <% if (hasPrevPage) { %>
+                                    <a href="?q=<%= searchTerm%>&page=<%=previousPage%>"><%=previousPage%></a>
+                                <% }%>
+                                <a href="?q=<%= searchTerm%>&page=<%=currentPage%>" class="active"><%=currentPage %></a>
+                                <% if (hasNextPage) { %>
+                                    <a href="?q=<%= searchTerm%>&page=<%=nextPage%>"><%=nextPage %></a>
+                                <% }%>
+                                <% if (lastPage !== currentPage && nextPage !== lastPage) { %>
+                                    <a href="?q=<%= searchTerm%>&page=<%=lastPage%>"><%=lastPage %></a>
+                                <% }%>
                             </section>
 
 

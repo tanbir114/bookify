@@ -5,6 +5,7 @@ const Record = require("../models/record");
 const Shop = require("../models/shop");
 const User = require("../models/user");
 const Sequelize = require("sequelize");
+const { Op, fn } = require("sequelize");
 
 const ITEMS_PER_PAGE = 1;
 
@@ -217,16 +218,9 @@ exports.postOrder = (req, res, next) => {
       return cart.getProducts();
     })
     .then((products) => {
-      console.log("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
-      console.log(products);
       req.user.createOrder().then((order) => {
         order.addProducts(
           products.map((product) => {
-            console.log(
-              "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-            );
-            console.log(product.cartItem);
-            console.log(product.cartItem.quantity);
             product.orderItem = {
               name: product.title,
               quantity: product.cartItem.quantity,
@@ -299,7 +293,9 @@ exports.getOrders = (req, res, next) => {
 
 exports.getSearch = async (req, res, next)  => {
   const searchTerm = req.query.q;
-  const itemsPerPage = 1; // Set the number of products per page
+  const itemsPerPage = 1;
+  console.log("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
+  console.log(searchTerm);
 
   try {
     const totalCount = await Product.count({
@@ -310,8 +306,10 @@ exports.getSearch = async (req, res, next)  => {
         ],
       },
     });
+    
 
     const currentPage = parseInt(req.query.page) || 1;
+    console.log(req.query.page);
     const offset = (currentPage - 1) * itemsPerPage;
 
     const products = await Product.findAll({
@@ -349,6 +347,7 @@ exports.getSearch = async (req, res, next)  => {
       isAuthenticated: req.session.isLoggedIn,
       csrfToken: req.csrfToken(),
       req: req,
+      searchTerm: searchTerm,
     });
   } catch (error) {
     console.error(error);
