@@ -3,13 +3,13 @@
     </head>
 
     <body>
+        <%- include('../includes/navigation.ejs') %>
         <form action="/search" method="GET">
             <label for="search">Search:</label>
             <input type="text" id="search" name="q" placeholder="Search products">
             <button type="submit">Search</button>
         </form>
-        <%- include('../includes/navigation.ejs') %>
-
+        
             <main>
                 <% if (prods.length > 0) { %>
                     <div class="grid">

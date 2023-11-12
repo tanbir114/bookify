@@ -304,6 +304,9 @@ exports.getSearch = async (req, res, next)  => {
           { title: { [Op.substring]: searchTerm } },
           { description: { [Op.substring]: searchTerm } },
         ],
+        userEmail: {
+          [Sequelize.Op.ne]: req.user.email,
+        },
       },
     });
     
@@ -318,13 +321,13 @@ exports.getSearch = async (req, res, next)  => {
           { title: { [Op.substring]: searchTerm } },
           { description: { [Op.substring]: searchTerm } },
         ],
+        userEmail: {
+          [Sequelize.Op.ne]: req.user.email,
+        },
       },
       limit: itemsPerPage,
       offset: offset,
-    
-
     });
-
     const totalPages = Math.ceil(totalCount / itemsPerPage);
     const hasPrevPage = currentPage > 1;
     const hasNextPage = itemsPerPage*currentPage < totalPages;
@@ -345,7 +348,6 @@ exports.getSearch = async (req, res, next)  => {
       nextPage: nextPage,
       lastPage: lastPage,
       isAuthenticated: req.session.isLoggedIn,
-      csrfToken: req.csrfToken(),
       req: req,
       searchTerm: searchTerm,
     });
