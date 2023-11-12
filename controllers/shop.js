@@ -3,8 +3,6 @@ const Order = require("../models/order");
 const OrderDetail = require("../models/record");
 const Record = require("../models/record");
 const Shop = require("../models/shop");
-const User = require("../models/user");
-const Sequelize = require("sequelize");
 
 const ITEMS_PER_PAGE = 1;
 
@@ -295,3 +293,64 @@ exports.getOrders = (req, res, next) => {
     })
     .catch((err) => console.log(err));
 };
+
+
+exports.getSearch = async (req, res, next)  => {
+  const searchTerm = req.query.q;
+  const itemsPerPage = 1; // Set the number of products per page
+
+  try {
+    const totalCount = await Product.count({
+      where: {
+        [Op.or]: [
+          { title: { [Op.substring]: searchTerm } },
+          { description: { [Op.substring]: searchTerm } },
+        ],
+      },
+    });
+
+    const currentPage = parseInt(req.query.page) || 1;
+    const offset = (currentPage - 1) * itemsPerPage;
+
+    const products = await Product.findAll({
+      where: {
+        [Op.or]: [
+          { title: { [Op.substring]: searchTerm } },
+          { description: { [Op.substring]: searchTerm } },
+        ],
+      },
+      limit: itemsPerPage,
+      offset: offset,
+    
+
+    });
+
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = itemsPerPage*currentPage < totalPages;
+    const previousPage = currentPage - 1;
+    const nextPage = currentPage + 1;
+    const lastPage = totalPages;
+
+    res.render('shop/search-results', {
+      prods: products,
+      pageTitle: 'Search Results',
+      path: '/search',
+      path:'/products',
+      totalPages: totalPages,
+      currentPage: currentPage,
+      hasPrevPage: hasPrevPage,
+      previousPage: previousPage,
+      hasNextPage: hasNextPage,
+      nextPage: nextPage,
+      lastPage: lastPage,
+      isAuthenticated: req.session.isLoggedIn,
+      csrfToken: req.csrfToken(),
+      req: req,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
