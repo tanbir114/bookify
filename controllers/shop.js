@@ -1,8 +1,10 @@
 const Product = require("../models/product");
 const Order = require("../models/order");
-const OrderItem = require("../models/order-item");
+const OrderDetail = require("../models/record");
 const Record = require("../models/record");
 const Shop = require("../models/shop");
+const User = require("../models/user");
+const Sequelize = require("sequelize");
 
 const ITEMS_PER_PAGE = 1;
 
@@ -15,10 +17,21 @@ exports.getProducts = (req, res, next) => {
   const offset = (page - 1) * ITEMS_PER_PAGE;
   let totalItems;
 
-  Product.count()
+  Product.count({
+    where: {
+      userEmail: {
+        [Sequelize.Op.ne]: req.user.email, // Exclude rows with the specific email
+      },
+    },
+  }) 
     .then((numProducts) => {
       totalItems = numProducts;
       return Product.findAll({
+        where: {
+          userEmail: {
+            [Sequelize.Op.ne]: req.user.email, // Exclude rows with the specific email
+          },
+        },
         limit: ITEMS_PER_PAGE,
         offset: offset,
       });
@@ -30,7 +43,7 @@ exports.getProducts = (req, res, next) => {
         path: "/products",
         currentPage: page,
         hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-        hasPrevPage: page>1,
+        hasPrevPage: page > 1,
         nextPage: page + 1,
         previousPage: page - 1,
         lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
@@ -79,12 +92,13 @@ exports.getProductCategory = (req, res, next) => {
 exports.getIndex = (req, res, next) => {
   const page = req.query.page || 1;
   const offset = (page - 1) * ITEMS_PER_PAGE;
-  Shop.findAll(
+  Shop
+    .findAll
     // {
     // limit: ITEMS_PER_PAGE,
     // offset: offset,
-  // }
-  )
+    // }
+    ()
     .then((shops) => {
       res.render("shop/index", {
         shops: shops,
@@ -137,6 +151,7 @@ exports.postCart = (req, res, next) => {
     .getProducts({ where: { id: prodId } })
     .then((products) => {
       const product = products[0];
+      console.log(product);
       if (product) {
         newName = product.title;
       }
@@ -157,7 +172,7 @@ exports.postCart = (req, res, next) => {
           if (product) {
             const oldQuantity = product.cartItem.quantity;
             newQuantity = oldQuantity + 1;
-            newName = product.cartItem.name;
+            newName = product.title;
             return product;
           }
           return Product.findByPk(prodId);
@@ -202,20 +217,28 @@ exports.postOrder = (req, res, next) => {
       return cart.getProducts();
     })
     .then((products) => {
+      console.log("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
+      console.log(products);
       req.user.createOrder().then((order) => {
         order.addProducts(
           products.map((product) => {
+            console.log(
+              "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            );
+            console.log(product.cartItem);
+            console.log(product.cartItem.quantity);
             product.orderItem = {
-              name: product.cartItem.name,
+              name: product.title,
               quantity: product.cartItem.quantity,
             };
             return product;
           })
         );
         orderDetails = products.map((product) => ({
-          name: product.cartItem.name,
+          name: product.title,
           quantity: product.cartItem.quantity,
           orderId: order.id,
+          shopEmail: product.userEmail,
         }));
         return Promise.all(
           orderDetails.map((orderDetail) => Record.create(orderDetail))
@@ -235,22 +258,39 @@ exports.getOrders = (req, res, next) => {
   if (!req.user) {
     return res.redirect("/");
   }
-  req.user
-    .getOrders({ include: ["details"] })
+  Order.findAll({
+    include: [
+      {
+        model: OrderDetail,
+        as: "details",
+        where: {
+          shopEmail: req.user.email,
+        },
+      },
+    ],
+  })
     .then((orders) => {
-      orders.forEach((order) => {
-        console.log("Order ID:", order.id);
-        console.log("Created At:", order.createdAt);
-        console.log("Updated At:", order.updatedAt);
-        order.details.forEach((product) => {
-          console.log("Product ID:", product.id);
-          console.log("Product Name:", product.name);
+      function formatDate(timestamp) {
+        const date = new Date(timestamp);
+        
+        const day = date.getDate();
+        return day;
+      }
+
+      function formatMonth(timestamp){
+        const date = new Date(timestamp);
+        const monthAbbreviation = date.toLocaleDateString("en-US", {
+          month: "short",
         });
-      });
+        return monthAbbreviation;
+      }
+
       res.render("shop/orders", {
         path: "/orders",
         pageTitle: "Your Orders",
         orders: orders,
+        formatDate: formatDate,
+        formatMonth: formatMonth,
       });
     })
     .catch((err) => console.log(err));

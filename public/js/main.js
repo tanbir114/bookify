@@ -14,3 +14,10 @@ function menuToggleClickHandler() {
 
 backdrop.addEventListener('click', backdropClickHandler);
 menuToggle.addEventListener('click', menuToggleClickHandler);
+
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+  const monthAbbreviation = date.toLocaleDateString('en-US', { month: 'short' });
+  const day = date.getDate();
+  return `${monthAbbreviation}<br><span>${day}</span>`;
+}
