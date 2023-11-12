@@ -3,6 +3,8 @@ const Order = require("../models/order");
 const OrderDetail = require("../models/record");
 const Record = require("../models/record");
 const Shop = require("../models/shop");
+const User = require("../models/user");
+const Sequelize = require("sequelize");
 
 const ITEMS_PER_PAGE = 1;
 
