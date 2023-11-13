@@ -16,7 +16,7 @@
             <form action="/search" method="GET" class="sort">
                 <label for="filterSort">Sort By:</label>
                 <select id="filterSort" name="filterSort" onchange="this.form.submit()">
-                  <!-- <option value="default" <% if (searchSort === 'default') { %>selected<% } %>>A-Z</option> -->
+                  
                    <option value="az" <% if (searchSort === 'az') { %>selected<% } %>>A-Z</option> 
                   <option value="za" <% if (searchSort === 'za') { %>selected<% } %>>Z-A</option>
                   <option value="price-asc" <% if (searchSort === 'price-asc') { %>selected<% } %>>Price Ascending</option>
@@ -28,7 +28,7 @@
                  <!-- Add a hidden input to store the current page -->
                 <input type="hidden" name="q" value="<%= searchTerm %>">
                 <input type="hidden" name="page" value="<%= currentPage %>">
-                 
+                
 
                 
                 
@@ -73,17 +73,17 @@
 
                             <section class="pagination">
                                 <% if (currentPage != 1 && previousPage != 1) { %>
-                                    <a href="?q=<%= searchTerm%>&page=1">1</a>
+                                    <a href="?filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=1">1</a>
                                 <% }%>
                                 <% if (hasPrevPage) { %>
-                                    <a href="?q=<%= searchTerm%>&page=<%=previousPage%>"><%=previousPage%></a>
+                                    <a href="?filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=previousPage%>"><%=previousPage%></a>
                                 <% }%>
-                                <a href="?q=<%= searchTerm%>&page=<%=currentPage%>" class="active"><%=currentPage %></a>
+                                <a href="?filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=currentPage%>" class="active"><%=currentPage %></a>
                                 <% if (hasNextPage) { %>
-                                    <a href="?q=<%= searchTerm%>&page=<%=nextPage%>"><%=nextPage %></a>
+                                    <a href="?filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=nextPage%>"><%=nextPage %></a>
                                 <% }%>
                                 <% if (lastPage !== currentPage && nextPage !== lastPage) { %>
-                                    <a href="?q=<%= searchTerm%>&page=<%=lastPage%>"><%=lastPage %></a>
+                                    <a href="?filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=lastPage%>"><%=lastPage %></a>
                                 <% }%>
                             </section>
 

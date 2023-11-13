@@ -17,7 +17,7 @@
             <label for="sort">Sort By:</label>
             <select id="sort" name="sort" onchange="this.form.submit()">
               <option value="default" <% if (sortOption === 'default') { %>selected<% } %>>A-Z</option>
-              <!-- <option value="az" <% if (sortOption === 'az') { %>selected<% } %>>A-Z</option> -->
+              
               <option value="za" <% if (sortOption === 'za') { %>selected<% } %>>Z-A</option>
               <option value="price-asc" <% if (sortOption === 'price-asc') { %>selected<% } %>>Price Ascending</option>
               <option value="price-desc" <% if (sortOption === 'price-desc') { %>selected<% } %>>Price Descending</option>
@@ -61,17 +61,18 @@
                     </div>
                     <section class="pagination">
                         <% if (currentPage != 1 && previousPage != 1) { %>
-                            <a href="?page=1">1</a>
+                            <a href="?sort=<%=sortOption%>&page=1">1</a>
                         <% }%>
                         <% if (hasPrevPage) { %>
-                            <a href="?page=<%=previousPage%>"><%=previousPage%></a>
+                            
+                            <a href="?sort=<%=sortOption%>&page=<%=previousPage%>"><%=previousPage%></a>
                         <% }%>
-                        <a href="?page=<%=currentPage%>" class="active"><%=currentPage %></a>
+                        <a href="?sort=<%=sortOption%>&page=<%=currentPage%>" class="active"><%=currentPage %></a>
                         <% if (hasNextPage) { %>
-                            <a href="?page=<%=nextPage%>"><%=nextPage %></a>
+                            <a href="?sort=<%=sortOption%>&page=<%=nextPage%>"><%=nextPage %></a>
                         <% }%>
                         <% if (lastPage !== currentPage && nextPage !== lastPage) { %>
-                            <a href="?page=<%=lastPage%>"><%=lastPage %></a>
+                            <a href="?sort=<%=sortOption%>&page=<%=lastPage%>"><%=lastPage %></a>
                         <% }%>
                         
                     </section>
