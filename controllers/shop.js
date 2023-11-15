@@ -92,86 +92,7 @@ exports.getProducts = (req, res, next) => {
 };
 
 
-// exports.getProducts = async (req, res, next) => {
-//   const page = +req.query.page || 1;
-//   const offset = (page - 1) * ITEMS_PER_PAGE;
-//   let totalItems;
 
-//   const sortOption = req.query.sort || 'default'; // Default sorting option
-//   const searchType = req.query.searchType || 'default'; // Default search type
-
-//   let sortingCriteria = [];
-//   switch (sortOption) {
-//     case 'az':
-//       sortingCriteria = [['title', 'ASC']];
-//       break;
-//     case 'za':
-//       sortingCriteria = [['title', 'DESC']];
-//       break;
-//     case 'price-asc':
-//       sortingCriteria = [['price', 'ASC']];
-//       break;
-//     case 'price-desc':
-//       sortingCriteria = [['price', 'DESC']];
-//       break;
-//     default:
-//       // Default sorting, you can customize this as needed
-//       sortingCriteria = [['title', 'ASC']];
-//   }
-
-//   const searchCondition = {
-//     userEmail: {
-//       [Sequelize.Op.ne]: req.user.email,
-//     },
-//   };
-
-//   // Add search conditions based on the searchType
-//   if (searchType === 'author') {
-//     // Add condition for searching by author
-//     searchCondition.author = {
-//       [Sequelize.Op.like]: `%${req.query.q}%`,
-//     };
-//   } else if (searchType === 'year') {
-//     // Add condition for searching by year
-//     searchCondition.year = req.query.q;
-//   } else {
-//     // Add default conditions for other cases
-//     searchCondition[Sequelize.Op.or] = [
-//       { title: { [Sequelize.Op.substring]: req.query.q } },
-//       { description: { [Sequelize.Op.substring]: req.query.q } },
-//     ];
-//   }
-
-//   try {
-//     totalItems = await Product.count({
-//       where: searchCondition,
-//     });
-
-//     const products = await Product.findAll({
-//       where: searchCondition,
-//       limit: ITEMS_PER_PAGE,
-//       offset: offset,
-//       order: sortingCriteria,
-//     });
-
-//     res.render("shop/product-list", {
-//       prods: products,
-//       pageTitle: "All Products",
-//       path: "/products",
-//       currentPage: page,
-//       hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-//       hasPrevPage: page > 1,
-//       nextPage: page + 1,
-//       previousPage: page - 1,
-//       lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-//       sortOption: sortOption,
-//       searchType:searchType,
-//     });
-//   } catch (err) {
-//     console.log(err);
-//     next(err);
-//   }
-// };
 
 
 
@@ -429,6 +350,10 @@ exports.getSearch = async (req, res, next) => {
       case 'year':
         searchCondition = { publishDate:  { [Op.substring]: searchTerm } };
         break;
+      
+      case 'category':
+        searchCondition = { category:  { [Op.substring]: searchTerm } };
+        break;
       default:
         // For 'book' or any other case
         searchCondition = {
@@ -479,15 +404,6 @@ console.log('After Switch - Search Condition:', searchCondition);
     const products = await Product.findAll({
       
       
-      
-      // where: {
-      //    [Op.or]: [
-      //     { title: { [Op.substring]: searchTerm } },
-          
-      //   ],
-      //   userEmail: {
-      //     [Sequelize.Op.ne]: req.user.email,
-      //   },
        where:{
         ...searchCondition,
         userEmail: {
@@ -532,106 +448,7 @@ console.log('After Switch - Search Condition:', searchCondition);
 };
 
 
-// exports.getSearch = async (req, res, next) => {
-//   const searchTerm = req.query.q;
-//   const itemsPerPage = 1;
-//   const searchType = req.query.searchType || 'book';
 
-//   try {
-//     const totalCount = await Product.count({
-//       where: {
-//         [Op.or]: [
-//           { title: { [Op.substring]: searchTerm } },
-//           { description: { [Op.substring]: searchTerm } },
-//         ],
-//         userEmail: {
-//           [Sequelize.Op.ne]: req.user.email,
-//         },
-//       },
-//     });
-
-//     const currentPage = parseInt(req.query.page) || 1;
-//     const offset = (currentPage - 1) * itemsPerPage;
-
-//     let sortOrder;
-//     const searchSort = req.query.filterSort || 'default';
-//     // const searchType = req.query.searchType || 'book'; // Added searchType
-
-//     switch (searchSort) {
-//       case 'za':
-//         sortOrder = [['title', 'DESC']];
-//         break;
-//       case 'price-asc':
-//         sortOrder = [['price', 'ASC']];
-//         break;
-//       case 'price-desc':
-//         sortOrder = [['price', 'DESC']];
-//         break;
-//       default:
-//         sortOrder = [['title', 'ASC']];
-//     }
-
-//     let searchCondition;
-
-//     switch (searchType) {
-//       case 'author':
-//         searchCondition = { author: searchTerm };
-//         break;
-//       case 'year':
-//         searchCondition = { year: searchTerm };
-//         break;
-//       default:
-//         // For 'book' or any other case
-//         searchCondition = {
-//           [Op.or]: [
-//             { title: { [Op.substring]: searchTerm } },
-//             { description: { [Op.substring]: searchTerm } },
-//           ],
-//         };
-//     }
-
-//     const products = await Product.findAll({
-//       where: {
-//         ...searchCondition,
-//         userEmail: {
-//           [Sequelize.Op.ne]: req.user.email,
-//         },
-//       },
-//       order: sortOrder,
-//       limit: itemsPerPage,
-//       offset: offset,
-//     });
-
-//     const totalPages = Math.ceil(totalCount / itemsPerPage);
-//     const hasPrevPage = currentPage > 1;
-//     const hasNextPage = itemsPerPage * currentPage < totalPages;
-//     const previousPage = currentPage - 1;
-//     const nextPage = currentPage + 1;
-//     const lastPage = totalPages;
-
-//     res.render('shop/search-results', {
-//       prods: products,
-//       pageTitle: 'Search Results',
-//       path: '/search',
-//       path: '/products',
-//       totalPages: totalPages,
-//       currentPage: currentPage,
-//       hasPrevPage: hasPrevPage,
-//       previousPage: previousPage,
-//       hasNextPage: hasNextPage,
-//       nextPage: nextPage,
-//       lastPage: lastPage,
-//       isAuthenticated: req.session.isLoggedIn,
-//       req: req,
-//       searchTerm: searchTerm,
-//       searchSort: searchSort,
-//       searchType: searchType, // Added searchType
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     next(error);
-//   }
-// };
 
 
 
