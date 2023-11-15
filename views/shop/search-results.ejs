@@ -12,9 +12,9 @@
                     
                     <select id="searchType" name="searchType">
                         
-                        <option value="book" <% if (searchType === 'book') { %>selected<% } %>>Book</option>
-                        <option value="author" <% if (searchType === 'author') { %>selected<% } %>>Author</option>
-                        <option value="year" <% if (searchType === 'year') { %>selected<% } %>>Year</option>
+                        <option value="book" <% if (searchKind === 'book') { %>selected<% } %>>Book</option>
+                        <option value="author" <% if (searchKind === 'author') { %>selected<% } %>>Author</option>
+                        <option value="year" <% if (searchKind === 'year') { %>selected<% } %>>Year</option>
                       </select>
                   <input type="text" id="search" name="q" placeholder="Search products">
                   <button type="submit">
@@ -84,17 +84,17 @@
 
                             <section class="pagination">
                                 <% if (currentPage != 1 && previousPage != 1) { %>
-                                    <a href="?filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=1">1</a>
+                                    <a href="?searchType=<%=searchKind%>&filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=1">1</a>
                                 <% }%>
                                 <% if (hasPrevPage) { %>
-                                    <a href="?filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=previousPage%>"><%=previousPage%></a>
+                                    <a href="?searchType=<%=searchKind%>&filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=previousPage%>"><%=previousPage%></a>
                                 <% }%>
-                                <a href="?filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=currentPage%>" class="active"><%=currentPage %></a>
+                                <a href="?searchType=<%=searchKind%>&filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=currentPage%>" class="active"><%=currentPage %></a>
                                 <% if (hasNextPage) { %>
-                                    <a href="?filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=nextPage%>"><%=nextPage %></a>
+                                    <a href="?searchType=<%=searchKind%>&filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=nextPage%>"><%=nextPage %></a>
                                 <% }%>
                                 <% if (lastPage !== currentPage && nextPage !== lastPage) { %>
-                                    <a href="?filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=lastPage%>"><%=lastPage %></a>
+                                    <a href="?searchType=<%=searchKind%>&filterSort=<%=searchSort%>&q=<%=searchTerm%>&page=<%=lastPage%>"><%=lastPage %></a>
                                 <% }%>
                             </section>
 

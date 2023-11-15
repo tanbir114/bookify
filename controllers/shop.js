@@ -20,7 +20,7 @@ exports.getProducts = (req, res, next) => {
   let totalItems;
 
   const sortOption = req.query.sort || 'default'; // Default sorting option
-  const searchType = req.query.searchType || 'default';
+  const searchKind = req.query.searchType || 'default';
 
   let sortingCriteria = [];
   switch (sortOption) {
@@ -82,7 +82,7 @@ exports.getProducts = (req, res, next) => {
         previousPage: page - 1,
         lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
         sortOption: sortOption,
-        searchType: searchType,
+        searchKind: searchKind,
         
       });
     })
@@ -416,18 +416,37 @@ exports.getOrders = (req, res, next) => {
 exports.getSearch = async (req, res, next) => {
   const searchTerm = req.query.q;
   const itemsPerPage = 1;
-  const searchType = req.query.searchType || 'book';
+  const searchKind = req.query.searchType || 'book';
 
   try {
+    let searchCondition;
+
+
+    switch (searchKind) {
+      case 'author':
+        searchCondition = { authorName:  { [Op.substring]: searchTerm } };
+        break;
+      case 'year':
+        searchCondition = { publishDate:  { [Op.substring]: searchTerm } };
+        break;
+      default:
+        // For 'book' or any other case
+        searchCondition = {
+          [Op.or]: [
+            { title: { [Op.substring]: searchTerm } },
+            
+          ],
+        };
+    }
+   
+   
+   
     const totalCount = await Product.count({
-      where: {
-        [Op.or]: [
-          { title: { [Op.substring]: searchTerm } },
-          { description: { [Op.substring]: searchTerm } },
-        ],
+      where:{
+        ...searchCondition,
         userEmail: {
-          [Sequelize.Op.ne]: req.user.email,
-        },
+             [Sequelize.Op.ne]: req.user.email,},
+       
       },
     });
 
@@ -452,35 +471,28 @@ exports.getSearch = async (req, res, next) => {
         sortOrder = [['title', 'ASC']];
     }
 
-let searchCondition;
 
-switch (searchType) {
-  case 'author':
-    searchCondition = { author: searchTerm };
-    break;
-  case 'year':
-    searchCondition = { year: searchTerm };
-    break;
-  default:
-    // For 'book' or any other case
-    searchCondition = {
-      [Op.or]: [
-        { title: { [Op.substring]: searchTerm } },
-        { description: { [Op.substring]: searchTerm } },
-      ],
-    };
-}
-
+console.log('Search Kind:', searchKind);
+console.log('Search Term:', searchTerm);
+console.log('After Switch - Search Condition:', searchCondition);
 
     const products = await Product.findAll({
-      where: {
-        [Op.or]: [
-          { title: { [Op.substring]: searchTerm } },
-          { description: { [Op.substring]: searchTerm } },
-        ],
+      
+      
+      
+      // where: {
+      //    [Op.or]: [
+      //     { title: { [Op.substring]: searchTerm } },
+          
+      //   ],
+      //   userEmail: {
+      //     [Sequelize.Op.ne]: req.user.email,
+      //   },
+       where:{
+        ...searchCondition,
         userEmail: {
-          [Sequelize.Op.ne]: req.user.email,
-        },
+             [Sequelize.Op.ne]: req.user.email,},
+       
       },
       order: sortOrder,
       limit: itemsPerPage,
@@ -510,8 +522,9 @@ switch (searchType) {
       req: req,
       searchTerm: searchTerm,
       searchSort: searchSort,
-      searchType:searchType, // Add the sortOption here
+      searchKind:searchKind, // Add the sortOption here
     });
+    console.log('Final Query:', products.query);
   } catch (error) {
     console.error(error);
     next(error);
