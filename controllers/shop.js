@@ -18,6 +18,21 @@ exports.getProducts = (req, res, next) => {
   const page = +req.query.page || 1;
   const offset = (page - 1) * ITEMS_PER_PAGE;
   let totalItems;
+  function stock(qty)
+  {
+    if(qty>0)
+    return "In Stock";
+    else
+    return "Out Of Stock";
+  }
+
+  function color(qty)
+  {
+    if(qty>0)
+    return "rgb(13, 106, 112)";
+  else
+  return "green";
+  }
 
   const sortOption = req.query.sort || 'default'; // Default sorting option
   const searchKind = req.query.searchType || 'default';
@@ -83,6 +98,9 @@ exports.getProducts = (req, res, next) => {
         lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
         sortOption: sortOption,
         searchKind: searchKind,
+        // quantity:quantity>0.
+        stock:stock,
+        color:color,
         
       });
     })
@@ -338,6 +356,13 @@ exports.getSearch = async (req, res, next) => {
   const searchTerm = req.query.q;
   const itemsPerPage = 1;
   const searchKind = req.query.searchType || 'book';
+  function stock(qty)
+  {
+    if(qty>0)
+    return "In Stock";
+    else
+    return "Out Of Stock";
+  }
 
   try {
     let searchCondition;
@@ -438,7 +463,8 @@ console.log('After Switch - Search Condition:', searchCondition);
       req: req,
       searchTerm: searchTerm,
       searchSort: searchSort,
-      searchKind:searchKind, // Add the sortOption here
+      searchKind:searchKind,
+      stock:stock, // Add the sortOption here
     });
     console.log('Final Query:', products.query);
   } catch (error) {

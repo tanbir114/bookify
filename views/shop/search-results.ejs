@@ -45,6 +45,10 @@
                 
                 
             </form>
+
+
+
+  
             </div>
 
          
@@ -52,11 +56,9 @@
 
             <h1>Search Results</h1>
             <main>
-
-
-                <% if (prods.length> 0) { %>
-                    <% for (let product of prods) { %>
-                        <div class="grid">
+                <% if (prods.length > 0) { %>
+                    <div class="grid">
+                        <% for (let product of prods) { %>
                             <article class="card product-item">
                                 <header class="card__header">
                                     <h1 class="product__title">
@@ -67,21 +69,30 @@
                                     <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
                                 </div>
                                 <div class="card__content">
-                                    <h2 class="product__price">$<%= product.price %>
+                                    <h2 class="product__price">$
+                                        <%= product.price %>
                                     </h2>
                                     <p class="product__description">
                                         <%= product.description %>
                                     </p>
                                 </div>
+                                <div class="cart_genre">
+                                    <i class="ion-edit pen-icon"> <%= product.authorName %></i>
+                                    <i class="ion-android-apps apps-icon"> <%= product.category %></i>
+
+                                </div>
                                 <div class="card__actions">
                                     <a href="/products/<%= product.id %>" class="btn">Details</a>
-                                    <% if (req.user) { %>
-                                        <%- include('../includes/add-to-cart.ejs', { product: product }) %>
-                                            <% } %>
+                                    
+                                    <% if (isAuthenticated) { %>
+                                        <%- include('../includes/add-to-cart.ejs', {product: product}) %>
+                                    <% } %>
+
+                                   <button class="btn" > <%=stock(product.quantity)%> </button>
                                 </div>
                             </article>
-                        </div>
-                        <% } %>
+                            <% } %>
+                    </div>
 
                             <section class="pagination">
                                 <% if (currentPage != 1 && previousPage != 1) { %>

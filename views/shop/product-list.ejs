@@ -41,6 +41,9 @@
              <!-- Add a hidden input to store the current page -->
             <input type="hidden" name="page" value="<%= currentPage %>">
         </form>
+
+
+  
         </div>
         
             <main>
@@ -64,11 +67,19 @@
                                         <%= product.description %>
                                     </p>
                                 </div>
+                                <div class="cart_genre">
+                                    <i class="ion-edit pen-icon"> <%= product.authorName %></i>
+                                    <i class="ion-android-apps apps-icon"> <%= product.category %></i>
+
+                                </div>
                                 <div class="card__actions">
                                     <a href="/products/<%= product.id %>" class="btn">Details</a>
+                                    
                                     <% if (isAuthenticated) { %>
                                         <%- include('../includes/add-to-cart.ejs', {product: product}) %>
                                     <% } %>
+
+                                   <button class="btn" > <%=stock(product.quantity)%> </button>
                                 </div>
                             </article>
                             <% } %>
