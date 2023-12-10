@@ -13,7 +13,8 @@
         top: 200px;
     }
 </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 </head>
 <body>
     <h1>Product Sales Doughnut Chart</h1>
@@ -23,7 +24,6 @@
     
     <script>
         var chrt = document.getElementById("mycanvas").getContext("2d");
-
         var productTitle = JSON.parse('<%- productTitle %>');
         var intArray = JSON.parse('<%- intArray %>');
 
@@ -46,7 +46,18 @@
             data: data,
             options: {
                 aspectRatio: 4, // Change this value to adjust the size (e.g., 0.5 for smaller)
-                maintainAspectRatio: true
+                maintainAspectRatio: true,
+                plugins: {
+                datalabels: {
+                    anchor: 'center',
+                    align: 'center',
+                    color: function(context) {
+                        var index = context.dataIndex;
+                        var value = context.dataset.data[index];
+                        return value > 0 ? 'white' : 'black';
+                    }
+                }
+            }
             }
         });
 
@@ -89,7 +100,18 @@
                     {
                         beginAtZero: true
                     }
+                },
+                plugins: {
+                datalabels: {
+                    anchor: 'center',
+                    align: 'center',
+                    color: function(context) {
+                        var index = context.dataIndex;
+                        var value = context.dataset.data[index];
+                        return value > 0 ? 'black' : 'white';
+                    }
                 }
+            }
             },
         });
     </script>

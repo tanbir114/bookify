@@ -13,6 +13,8 @@ router.get('/cart', isAuth, shopController.getCart);
 router.post('/cart', isAuth, shopController.postCart);
 router.post('/cart-delete-item', isAuth, shopController.postCartDeleteProduct);
 router.get('/orders', isAuth, shopController.getOrders);
+router.get('/order-history', isAuth, shopController.getOrderHistory);
+router.get('/order-history/:orderId', isAuth, shopController.getInvoice);
 // router.get('/checkout', shopController.getCheckout);
 router.post('/create-order', isAuth, shopController.postOrder);
 router.get('/search',isAuth,shopController.getSearch);

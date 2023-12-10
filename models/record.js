@@ -6,6 +6,10 @@ const OrderDetail = sequelize.define("orderDetail", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  price:{
+    type: Sequelize.DOUBLE,
+    allowNull: false
+  },
   quantity: {
     type: Sequelize.INTEGER,
     allowNull: false,

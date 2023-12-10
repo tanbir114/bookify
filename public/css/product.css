@@ -49,10 +49,6 @@
     /* white-space: nowrap; */
 }
 
-.cart_genre {
-    display: flex;
-    gap: 75px; /* Adjust the gap as needed */
-}
 .pen-icon::before,
 .apps-icon::before {
     font-size: 20px; 

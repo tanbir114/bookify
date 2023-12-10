@@ -1,16 +1,83 @@
 <%- include('../includes/head.ejs') %>
     <link rel="stylesheet" href="/css/product.css">
     <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-    </head>
+    <style>
+         .product__description 
+         {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
 
+        .product__description-ellipsis {
+            display: none;
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            margin: 10px;
+        }
+
+        .card__image {
+            width: 100%;
+            overflow: visible;
+        }
+
+        .card__image img {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+        }
+
+        .filter {
+            margin-bottom: 100px;
+        }
+
+        main {
+            padding-top: 60px;
+        }
+
+        .card__content {
+            padding: 15px;
+        }
+
+        .card__actions
+        {
+            margin-top: auto;
+        }
+
+        .cart_genre {
+            display: flex;
+            gap: 10px;
+        }
+
+        .product__title {
+            margin: 0;
+            margin-bottom: auto;
+            /* background-color: whitesmoke; */
+        }
+
+        .card__content {
+            flex: 1;
+            /* justify-content: bottom; */
+        }
+
+        .card__header {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+    </style>
+    </head>
     <body>
         <%- include('../includes/navigation.ejs') %>
         <div class="filter">
-
         <form action="/search" method="GET" class="search">
           <div class="search-container">
-            
-            
             <select id="searchType" name="searchType">
                 <option value="book" <% if (searchKind === 'book') { %>selected<% } %>>Book</option>
                 <option value="author" <% if (searchKind === 'author') { %>selected<% } %>>Author</option>
@@ -24,8 +91,6 @@
              </button>
             </div>
         </form>
-        
-         
         <form action="/products" method="GET" class="sort">
             <label for="sort">Sort By:</label>
             <select id="sort" name="sort" onchange="this.form.submit()">
@@ -35,30 +100,22 @@
               <option value="price-asc" <% if (sortOption === 'price-asc') { %>selected<% } %>>Price Ascending</option>
               <option value="price-desc" <% if (sortOption === 'price-desc') { %>selected<% } %>>Price Descending</option>
             </select>
-
-            
-
-             <!-- Add a hidden input to store the current page -->
             <input type="hidden" name="page" value="<%= currentPage %>">
         </form>
-
-
-  
         </div>
-        
             <main>
                 <% if (prods.length > 0) { %>
                     <div class="grid">
                         <% for (let product of prods) { %>
                             <article class="card product-item">
+                                <div class="card__image">
+                                    <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
+                                </div>
                                 <header class="card__header">
                                     <h1 class="product__title">
                                         <%= product.title %>
                                     </h1>
                                 </header>
-                                <div class="card__image">
-                                    <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
-                                </div>
                                 <div class="card__content">
                                     <h2 class="product__price">$
                                         <%= product.price %>
@@ -70,7 +127,6 @@
                                 <div class="cart_genre">
                                     <i class="ion-edit pen-icon"> <%= product.authorName %></i>
                                     <i class="ion-android-apps apps-icon"> <%= product.category %></i>
-
                                 </div>
                                 <div class="card__actions">
                                     <a href="/products/<%= product.id %>" class="btn">Details</a>
@@ -99,10 +155,19 @@
                         <% if (lastPage !== currentPage && nextPage !== lastPage) { %>
                             <a href="?searchType=<%=searchKind%>&sort=<%=sortOption%>&page=<%=lastPage%>"><%=lastPage %></a>
                         <% }%>
-                        
                     </section>
                     <% } else { %>
                         <h1>No Products Found!</h1>
                         <% } %>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                var productDescriptions = document.querySelectorAll('.product__description');             
+                                productDescriptions.forEach(function(description) {
+                                    if (description.scrollHeight > description.clientHeight) {
+                                        description.nextElementSibling.style.display = 'block';
+                                    }
+                                });
+                            });
+                        </script>
             </main>
             <%- include('../includes/end.ejs') %>

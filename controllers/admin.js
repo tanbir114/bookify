@@ -3,7 +3,8 @@ const Cart = require("../models/cart");
 const CartItem = require("../models/cart-item");
 const Shop = require("../models/shop");
 const User = require("../models/user");
-const OrderItem = require("../models/order-item");
+const Record = require("../models/record");
+const Order = require("../models/order");
 const Sequelize = require("sequelize");
 const { Op, fn } = require("sequelize");
 const sequelize = require("../util/database");
@@ -22,14 +23,33 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
+  const image = req.file;
   const price = req.body.price;
   const description = req.body.description;
   const publishDate = req.body.publish;
   const authorName = req.body.author;
   const category = req.body.category;
   const quantity = req.body.quantity;
-  console.log(publishDate);
+  if(!image){
+    return res.status(422).render('admin/edit-product',{
+      pageTitle: 'Add Product',
+      path: 'admin/add-product',
+      editing: false,
+      hasError: true,
+      product:{
+        title: title,
+        price: price,
+        description: description,
+        publishDate: publishDate,
+        authorName: authorName,
+        category: category,
+        quantity: quantity,
+      },
+      errorMessage: 'Attached file is not an image.',
+      validationErrors: []
+    })
+  }
+  const imageUrl = image.path;
   req.user
     .createProduct({
       title: title,
@@ -122,8 +142,33 @@ exports.postEditProduct = (req, res, next) => {
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
   const updatedPrice = req.body.price;
-  const updatedImageUrl = req.body.imageUrl;
+  const updatedImage = req.file;
   const updatedDesc = req.body.description;
+  const updatedPublishDate = req.body.publish;
+  const updatedAuthorName = req.body.author;
+  const updatedCategory = req.body.category;
+  const updatedQuantity = req.body.quantity;
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render('admin/edit-product', {
+      pageTitle: 'Edit Product',
+      path: '/admin/edit-product',
+      editing: true,
+      hasError: true,
+      product: {
+        title: updatedTitle,
+        price: updatedPrice,
+        description: updatedDesc,
+        _id: prodId,
+        publishDate: updatedPublishDate,
+        authorName: updatedAuthorName,
+        category: updatedCategory,
+        quantity: updatedQuantity,
+      },
+      errorMessage: errors.array()[0].msg,
+      validationErrors: errors.array()
+    });
+  }
 
   Product.findByPk(prodId)
     .then((product) => {
@@ -133,7 +178,12 @@ exports.postEditProduct = (req, res, next) => {
       product.title = updatedTitle;
       product.price = updatedPrice;
       product.description = updatedDesc;
-      product.imageUrl = updatedImageUrl;
+      publishDate= updatedPublishDate;
+      product.authorName= updatedAuthorName;
+      product.category= updatedCategory;
+      product.quantity= updatedQuantity;
+      if(image)
+        product.imageUrl = image.path;
       return product.save().then((result) => {
         console.log("UPDATED PRODUCT!");
         res.redirect("/admin/products");
@@ -191,7 +241,7 @@ exports.postDeleteProduct = (req, res, next) => {
 exports.getSales = async (req, res, next) => {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - 7);
-  const salesData = await OrderItem.findAll({
+  const salesData = await Record.findAll({ 
     attributes: [
       [sequelize.fn("SUM", sequelize.col("quantity")), "totalQuantity"],
       "productId",
@@ -200,9 +250,9 @@ exports.getSales = async (req, res, next) => {
       createdAt: {
         [Op.gte]: startDate,
       },
+      shopEmail: req.user.email,
     },
     group: ["productId"],
-    // order: ['productid'],
   });
 
   console.log(salesData);
@@ -210,19 +260,15 @@ exports.getSales = async (req, res, next) => {
   const totalQuantities = salesData.map(
     (item) => item.dataValues.totalQuantity
   );
-  const productTitle = [];
 
-  for(let i=0; i<salesData.length; i++){
-    // console.log("ProdId: " + salesData[i].dataValues.productId);
-    await Product.findByPk(salesData[i].dataValues.productId, {
-      attributes: ["title"],
-    })
-    .then(product => {
-      productTitle.push(product.title);
-    })
-  }
+  const productTitle = salesData.map(
+    (item) => item.dataValues.name 
+  );
 
   const intArray = totalQuantities.map(str => parseInt(str, 10));
+
+  console.log("quantity:" + totalQuantities);
+  console.log("title:" + productTitle);
   
   res.render("admin/sales", {
     intArray: JSON.stringify(intArray), // Convert to JSON string

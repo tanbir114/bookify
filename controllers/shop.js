@@ -6,35 +6,36 @@ const Shop = require("../models/shop");
 const User = require("../models/user");
 const Sequelize = require("sequelize");
 const { Op, fn } = require("sequelize");
+const fs = require("fs");
+const path = require("path");
+const PDFDocument = require("pdfkit");
+const { Console } = require("console");
 
-const ITEMS_PER_PAGE = 1;
+const ITEMS_PER_PAGE = 5;
 
 function isIntegerString(value) {
   return /^\d+$/.test(value);
 }
 
-
 exports.getProducts = (req, res, next) => {
   const page = +req.query.page || 1;
   const offset = (page - 1) * ITEMS_PER_PAGE;
   let totalItems;
-  function stock(qty)
-  {
-    if(qty>0)
-    return "In Stock";
+  function stock(qty) {
+    if (qty > 0)
+      return "In Stock";
     else
-    return "Out Of Stock";
+      return "Out Of Stock";
   }
 
-  function color(qty)
-  {
-    if(qty>0)
-    return "rgb(13, 106, 112)";
-  else
-  return "green";
+  function color(qty) {
+    if (qty > 0)
+      return "rgb(13, 106, 112)";
+    else
+      return "green";
   }
 
-  const sortOption = req.query.sort || 'default'; // Default sorting option
+  const sortOption = req.query.sort || 'default';
   const searchKind = req.query.searchType || 'default';
 
   let sortingCriteria = [];
@@ -52,37 +53,27 @@ exports.getProducts = (req, res, next) => {
       sortingCriteria = [['price', 'DESC']];
       break;
     default:
-      // Default sorting, you can customize this as needed
       sortingCriteria = [['title', 'ASC']];
   }
 
-  
-
-
-
-    
-
-     
-
-
+  var whereCondition = {};
+  if (req.session.isLoggedIn) {
+    whereCondition.userEmail= {
+      [Sequelize.Op.ne]: req.user.email,
+    };
+  }
   Product.count({
-    where: {
-      userEmail: {
-        [Sequelize.Op.ne]: req.user.email,
-      },
-    },
-  }) 
+    where:  whereCondition
+  })
     .then((numProducts) => {
       totalItems = numProducts;
+      console.log(totalItems);
+      
       return Product.findAll({
-        where: {
-          userEmail: {
-            [Sequelize.Op.ne]: req.user.email,
-          },
-        },
+        where: whereCondition,
         limit: ITEMS_PER_PAGE,
         offset: offset,
-        order: sortingCriteria, // Apply sorting criteria
+        order: sortingCriteria,
       });
     })
     .then((products) => {
@@ -98,10 +89,8 @@ exports.getProducts = (req, res, next) => {
         lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
         sortOption: sortOption,
         searchKind: searchKind,
-        // quantity:quantity>0.
-        stock:stock,
-        color:color,
-        
+        stock: stock,
+        color: color,
       });
     })
     .catch((err) => {
@@ -109,17 +98,10 @@ exports.getProducts = (req, res, next) => {
     });
 };
 
-
-
-
-
-
-
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
   console.log(prodId);
   if (isIntegerString(prodId)) {
-    console.log("1111111111111111111111");
     Product.findByPk(prodId)
       .then((product) => {
         res.render("shop/product-detail", {
@@ -130,7 +112,6 @@ exports.getProduct = (req, res, next) => {
       })
       .catch((err) => console.log(err));
   } else {
-    console.log("122222222222222222");
     next();
   }
 };
@@ -326,12 +307,12 @@ exports.getOrders = (req, res, next) => {
     .then((orders) => {
       function formatDate(timestamp) {
         const date = new Date(timestamp);
-        
+
         const day = date.getDate();
         return day;
       }
 
-      function formatMonth(timestamp){
+      function formatMonth(timestamp) {
         const date = new Date(timestamp);
         const monthAbbreviation = date.toLocaleDateString("en-US", {
           month: "short",
@@ -350,18 +331,57 @@ exports.getOrders = (req, res, next) => {
     .catch((err) => console.log(err));
 };
 
+exports.getOrderHistory = (req, res, next) => {
+  if (!req.user) {
+    return res.redirect("/");
+  }
+  Order.findAll({
+    where: {
+      userEmail: req.user.email,
+    },
+    include: [
+      {
+        model: OrderDetail,
+        as: "details",
+      },
+    ],
+  })
+    .then((orders) => {
+      function formatDate(timestamp) {
+        const date = new Date(timestamp);
 
+        const day = date.getDate();
+        return day;
+      }
+
+      function formatMonth(timestamp) {
+        const date = new Date(timestamp);
+        const monthAbbreviation = date.toLocaleDateString("en-US", {
+          month: "short",
+        });
+        return monthAbbreviation;
+      }
+
+      res.render("shop/order-history", {
+        path: "/order-history",
+        pageTitle: "Order History",
+        orders: orders,
+        formatDate: formatDate,
+        formatMonth: formatMonth,
+      });
+    })
+    .catch((err) => console.log(err));
+};
 
 exports.getSearch = async (req, res, next) => {
   const searchTerm = req.query.q;
   const itemsPerPage = 1;
   const searchKind = req.query.searchType || 'book';
-  function stock(qty)
-  {
-    if(qty>0)
-    return "In Stock";
+  function stock(qty) {
+    if (qty > 0)
+      return "In Stock";
     else
-    return "Out Of Stock";
+      return "Out Of Stock";
   }
 
   try {
@@ -370,33 +390,34 @@ exports.getSearch = async (req, res, next) => {
 
     switch (searchKind) {
       case 'author':
-        searchCondition = { authorName:  { [Op.substring]: searchTerm } };
+        searchCondition = { authorName: { [Op.substring]: searchTerm } };
         break;
       case 'year':
-        searchCondition = { publishDate:  { [Op.substring]: searchTerm } };
+        searchCondition = { publishDate: { [Op.substring]: searchTerm } };
         break;
-      
+
       case 'category':
-        searchCondition = { category:  { [Op.substring]: searchTerm } };
+        searchCondition = { category: { [Op.substring]: searchTerm } };
         break;
       default:
         // For 'book' or any other case
         searchCondition = {
           [Op.or]: [
             { title: { [Op.substring]: searchTerm } },
-            
+
           ],
         };
     }
-   
-   
-   
+
+
+
     const totalCount = await Product.count({
-      where:{
+      where: {
         ...searchCondition,
         userEmail: {
-             [Sequelize.Op.ne]: req.user.email,},
-       
+          [Sequelize.Op.ne]: req.user.email,
+        },
+
       },
     });
 
@@ -404,10 +425,10 @@ exports.getSearch = async (req, res, next) => {
     const offset = (currentPage - 1) * itemsPerPage;
 
     let sortOrder;
-    const searchSort=req.query.filterSort || 'default';
+    const searchSort = req.query.filterSort || 'default';
 
 
-      switch (searchSort) {
+    switch (searchSort) {
       case 'za':
         sortOrder = [['title', 'DESC']];
         break;
@@ -422,18 +443,19 @@ exports.getSearch = async (req, res, next) => {
     }
 
 
-console.log('Search Kind:', searchKind);
-console.log('Search Term:', searchTerm);
-console.log('After Switch - Search Condition:', searchCondition);
+    console.log('Search Kind:', searchKind);
+    console.log('Search Term:', searchTerm);
+    console.log('After Switch - Search Condition:', searchCondition);
 
     const products = await Product.findAll({
-      
-      
-       where:{
+
+
+      where: {
         ...searchCondition,
         userEmail: {
-             [Sequelize.Op.ne]: req.user.email,},
-       
+          [Sequelize.Op.ne]: req.user.email,
+        },
+
       },
       order: sortOrder,
       limit: itemsPerPage,
@@ -463,8 +485,8 @@ console.log('After Switch - Search Condition:', searchCondition);
       req: req,
       searchTerm: searchTerm,
       searchSort: searchSort,
-      searchKind:searchKind,
-      stock:stock, // Add the sortOption here
+      searchKind: searchKind,
+      stock: stock, // Add the sortOption here
     });
     console.log('Final Query:', products.query);
   } catch (error) {
@@ -472,6 +494,112 @@ console.log('After Switch - Search Condition:', searchCondition);
     next(error);
   }
 };
+
+
+exports.getInvoice = (req, res, next) => {
+  const orderId = req.params.orderId;
+  const shopName = "Your Shop Name";
+  const invoiceNo = "INV-" + orderId; // You can customize the invoice number generation
+  const shopEmail = "shop@example.com";
+  const shopLocation = "Shop Location, City, Country";
+
+  Order.findAll({
+    where: {
+      Id: orderId,
+    },
+    include: [
+      {
+        model: OrderDetail,
+        as: "details",
+      },
+    ],
+  })
+    .then((orders) => {
+      if (!orders || orders.length === 0) {
+        return next(new Error("No order found."));
+      }
+
+      const invoiceName = "invoice-" + orderId + ".pdf";
+      const invoicePath = path.join("data", "invoices", invoiceName);
+
+      const pdfDoc = new PDFDocument();
+
+      // Stream the PDF directly to the response
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        'inline; filename="' + invoiceName + '"'
+      );
+      pdfDoc.pipe(res);
+
+      // Header Section
+      pdfDoc.fontSize(26).text(shopName, { underline: true }).moveDown(0.5);
+      pdfDoc.text(shopEmail).moveDown(0.2);
+      pdfDoc.text(shopLocation).moveDown(0.5);
+
+      // Invoice Information
+      pdfDoc.fontSize(14);
+      pdfDoc.text(`Invoice No: ${invoiceNo}`).moveDown(0.2);
+      pdfDoc.text(`Date: ${getCurrentDate()}`).moveDown(0.5);
+
+      // Line separator
+      pdfDoc
+        .strokeColor("#aaaaaa")
+        .lineWidth(1)
+        .moveTo(50, pdfDoc.y)
+        .lineTo(550, pdfDoc.y)
+        .stroke()
+        .moveDown(0.5);
+
+      // Order details
+      orders.forEach((order) => {
+        order.details.forEach((prod) => {
+          pdfDoc
+            .text(`${prod.name} - ${prod.quantity} x $${prod.price}`, {
+              width: 500,
+            })
+            .moveDown(0.2);
+        });
+      });
+
+      // Line separator
+      pdfDoc
+        .strokeColor("#aaaaaa")
+        .lineWidth(1)
+        .moveTo(50, pdfDoc.y)
+        .lineTo(550, pdfDoc.y)
+        .stroke()
+        .moveDown(0.5);
+
+      // Total Price
+      pdfDoc
+        .fontSize(18)
+        .text(`Total Price: $${calculateTotalPrice(orders)}`, {
+          align: "right",
+        })
+        .moveDown(1);
+
+      pdfDoc.end();
+    })
+    .catch((err) => next(err));
+};
+
+function calculateTotalPrice(orders) {
+  let totalPrice = 0;
+  orders.forEach((order) => {
+    order.details.forEach((prod) => {
+      totalPrice += prod.quantity * prod.price;
+    });
+  });
+  return totalPrice.toFixed(2);
+}
+
+function getCurrentDate() {
+  const now = new Date();
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  return now.toLocaleDateString("en-US", options);
+}
+
 
 
 
